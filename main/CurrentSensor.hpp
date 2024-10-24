@@ -12,7 +12,7 @@ class CurrentSensor {
   const float CURRENT_SENSOR_OFFSET = 2.35;
   const float CALIBRATION_FACTOR = 1.097;
   const float RESISTER_VALUE_1 = 979.0;
-  const float RESISTER_VALUE_2 = 1958.0;
+  const float RESISTER_VALUE_2 = 1952.0;
 
  public:
   CurrentSensor(adc1_channel_t adcChannel, adc_bits_width_t adcWidth);
