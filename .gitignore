@@ -3,6 +3,9 @@
 # config
 sdkconfig
 
+# dependencies
+dependencies.lock
+
 # production
 build/
 
