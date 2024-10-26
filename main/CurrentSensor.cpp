@@ -1,14 +1,13 @@
 #include "driver/adc.h"
 #include "freertos/FreeRTOS.h"
 
+#include "AnalogSensor.hpp"
 #include "CurrentSensor.hpp"
 
-CurrentSensor::CurrentSensor(adc1_channel_t adcChannel, adc_bits_width_t adcWidth) {
-  this->adcChannel = adcChannel;
-  this->adcWidth = adcWidth;
-  adc1_config_width(adcWidth);
-  adc1_config_channel_atten(adcChannel, ADC_ATTEN_DB_12);
-}
+CurrentSensor::CurrentSensor(
+  adc1_channel_t adcChannel,
+  adc_bits_width_t adcWidth
+) : AnalogSensor(adcChannel, adcWidth) { }
 
 float CurrentSensor::read() {
   int adcValue = 0;
