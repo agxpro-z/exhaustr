@@ -2,10 +2,10 @@
 
 #include "driver/adc.h"
 
-class VoltageSensor {
+#include "AnalogSensor.hpp"
+
+class VoltageSensor : public AnalogSensor {
  private:
-  adc1_channel_t adcChannel{};
-  adc_bits_width_t adcWidth{};
   const float VOLTAGE = 3.23;
   const float MAX_ADC = 4095;
   const float VOLTAGE_SENSOR_SENSITIVITY = 0.100;

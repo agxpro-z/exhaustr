@@ -1,11 +1,12 @@
 #include "driver/adc.h"
 
+#include "AnalogSensor.hpp"
 #include "VoltageSensor.hpp"
 
-VoltageSensor::VoltageSensor(adc1_channel_t adcChannel, adc_bits_width_t adcWidth) : adcChannel(adcChannel), adcWidth(adcWidth) {
-  adc1_config_width(adcWidth);
-  adc1_config_channel_atten(adcChannel, ADC_ATTEN_DB_11);
-}
+VoltageSensor::VoltageSensor(
+  adc1_channel_t adcChannel,
+  adc_bits_width_t adcWidth
+) : AnalogSensor(adcChannel, adcWidth) { }
 
 float VoltageSensor::read() {
   uint32_t adcValue = adc1_get_raw(adcChannel);
