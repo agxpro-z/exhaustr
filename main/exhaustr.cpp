@@ -1,14 +1,15 @@
 #include <iostream>
 #include <stdio.h>
 
+
 #include "driver/adc.h"
 #include "freertos/FreeRTOS.h"
 
 #include "BuiltinLED.hpp"
+#include "CPUFan.hpp"
 #include "CurrentSensor.hpp"
 #include "DHTSensor.hpp"
 #include "GasSensor.hpp"
-#include "Switch.hpp"
 #include "VoltageSensor.hpp"
 
 #ifdef __cplusplus
@@ -17,7 +18,7 @@ extern "C" {
 
 void app_main() {
   BuiltInLED builtinLED;
-  Switch fanSwitch(GPIO_NUM_15, "Fan Switch");
+  CPUFan cpuFan(GPIO_NUM_15, "CPU Fan");
 
   DHTSensor dhtSensor1(GPIO_NUM_9, DHTSensor::SensorType::DHT_TYPE_DHT11, "DHT Sensor 1");
   DHTSensor dhtSensor2(GPIO_NUM_10, DHTSensor::SensorType::DHT_TYPE_DHT11, "DHT Sensor 2");
@@ -37,7 +38,7 @@ void app_main() {
     float airQuality = gasSensor.read();
     printf("Air Quality: %.2f\n", airQuality);
 
-    fanSwitch.on();
+    cpuFan.turnOn();
 
     builtinLED.blink(1000);
     current = currentSensor.read();
@@ -52,7 +53,7 @@ void app_main() {
     printf("Temperature: %.2f°C, Humidity: %.2f%%\n", dhtSensor2.getTemperature(), dhtSensor2.getHumidity());
 
     vTaskDelay(10000 / portTICK_PERIOD_MS);
-    fanSwitch.off();
+    cpuFan.turnOff();
   }
 }
 
