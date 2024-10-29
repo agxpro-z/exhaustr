@@ -3,6 +3,7 @@
 
 
 #include "driver/adc.h"
+#include "esp_pthread.h"
 #include "freertos/FreeRTOS.h"
 
 #include "BuiltinLED.hpp"
@@ -16,8 +17,15 @@
 extern "C" {
 #endif
 
-void app_main() {
+void* blink_thread(void* arg) {
   BuiltInLED builtinLED;
+  while (true) {
+    builtinLED.blink(1000);
+  }
+  return nullptr;
+}
+
+void app_main() {
   CPUFan cpuFan(GPIO_NUM_15, "CPU Fan");
 
   DHTSensor dhtSensor1(GPIO_NUM_9, DHTSensor::SensorType::DHT_TYPE_DHT11, "DHT Sensor 1");
@@ -28,8 +36,16 @@ void app_main() {
 
   GasSensor gasSensor(ADC1_CHANNEL_6 /* GPIO34 */, ADC_WIDTH_BIT_12);
 
+  // Create a thread to blink the built-in LED
+  esp_pthread_cfg_t cfg = esp_pthread_get_default_config();
+  esp_pthread_set_cfg(&cfg);
+  pthread_t thread;
+  int res = pthread_create(&thread, nullptr, blink_thread, nullptr);
+  if (res != 0) {
+    printf("Failed to create thread: %d\n", res);
+  }
+
   while (true) {
-    builtinLED.blink(1000);
     float current = currentSensor.read();
     printf("Current: %.2f A\n", current);
     float voltage = voltageSensor.read();
@@ -38,13 +54,16 @@ void app_main() {
     float airQuality = gasSensor.read();
     printf("Air Quality: %.2f\n", airQuality);
 
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
     cpuFan.turnOn();
 
-    builtinLED.blink(1000);
     current = currentSensor.read();
     printf("Current: %.2f A\n", current);
     voltage = voltageSensor.read();
     printf("Voltage: %.2f V\n", voltage);
+
+    airQuality = gasSensor.read();
+    printf("Air Quality: %.2f\n", airQuality);
 
     printf("Reading data from DHT sensor 1\n");
     printf("Temperature: %.2f°C, Humidity: %.2f%%\n", dhtSensor1.getTemperature(), dhtSensor1.getHumidity());
@@ -52,7 +71,7 @@ void app_main() {
     printf("Reading data from DHT sensor 2\n");
     printf("Temperature: %.2f°C, Humidity: %.2f%%\n", dhtSensor2.getTemperature(), dhtSensor2.getHumidity());
 
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
+    vTaskDelay(15000 / portTICK_PERIOD_MS);
     cpuFan.turnOff();
   }
 }
