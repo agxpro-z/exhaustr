@@ -8,6 +8,7 @@ class Switch {
  private:
   gpio_num_t pin;
   std::string name;
+  bool state;
 
  public:
   Switch(gpio_num_t pin, std::string name);
