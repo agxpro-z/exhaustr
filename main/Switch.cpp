@@ -16,10 +16,10 @@ bool Switch::isOn() {
 
 void Switch::on() {
   gpio_set_level(pin, 1);
-  ESP_LOGI(name.c_str(), "Switch is on");
+  ESP_LOGI("Switch", "%s is on", name.c_str());
 }
 
 void Switch::off() {
   gpio_set_level(pin, 0);
-  ESP_LOGI(name.c_str(), "Switch is off");
+  ESP_LOGI("Switch", "%s is off", name.c_str());
 }
