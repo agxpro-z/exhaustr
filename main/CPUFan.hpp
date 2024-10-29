@@ -12,18 +12,23 @@
  *
  * @note  The fan is turned on when the relay switch is closed and turned off when the relay switch is open.
  *
- * @param gpioPin The GPIO pin connected to the relay switch.
+ * @param fanPin The GPIO pin connected to the relay switch.
+ * @param tachoPin The GPIO pin connected to the fan's tachometer output.
  * @param name The name of the CPU fan.
  */
 class CPUFan {
  private:
-  gpio_num_t gpioPin;
+  gpio_num_t fanPin;
+  gpio_num_t tachoPin;
   std::string name;
   Switch fanSwitch;
+  int fanRPM;
+  int fanRPMCounter;
 
  public:
-  CPUFan(gpio_num_t gpioPin, std::string name);
+  CPUFan(gpio_num_t fanPin, gpio_num_t tachoPin, std::string name);
   void turnOn();
   void turnOff();
   bool isOn();
+  int getFanRPM();
 };

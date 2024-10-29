@@ -39,10 +39,20 @@ void* dht_thread(void* args) {
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
+  return nullptr;
+}
+
+void* fanRPM_thread(void* arg) {
+  CPUFan* cpuFan = (CPUFan*) arg;
+  while (true) {
+    printf("Fan RPM: %d\n", cpuFan->getFanRPM());
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
+  return nullptr;
 }
 
 void app_main() {
-  CPUFan cpuFan(GPIO_NUM_15, "CPU Fan");
+  CPUFan cpuFan(GPIO_NUM_15, GPIO_NUM_22, "CPU Fan");
 
   CurrentSensor currentSensor(ADC1_CHANNEL_4 /* GPIO32 */, ADC_WIDTH_BIT_12);
   VoltageSensor voltageSensor(ADC1_CHANNEL_5 /* GPIO33 */, ADC_WIDTH_BIT_12);
@@ -62,13 +72,19 @@ void app_main() {
     printf("Failed to create thread: %d\n", res);
   }
 
+  // Create a thread to read the fan RPM
+  res = pthread_create(&thread, nullptr, fanRPM_thread, &cpuFan);
+  if (res != 0) {
+    printf("Failed to create thread: %d\n", res);
+  }
+
   while (true) {
     float current = currentSensor.read();
     printf("Current: %.2f A\n", current);
     float voltage = voltageSensor.read();
     printf("Voltage: %.2f V\n", voltage);
 
-    vTaskDelay(5000 / portTICK_PERIOD_MS);
+    vTaskDelay(15000 / portTICK_PERIOD_MS);
     cpuFan.turnOn();
 
     current = currentSensor.read();
