@@ -5,6 +5,7 @@
 #include "esp_log.h"
 #include "cJSON.h"
 
+#include "DeviceController.hpp"
 #include "RESTServer.hpp"
 
 static const char* TAG = "RESTServer";
@@ -15,6 +16,11 @@ static const int REST_SERVER_PORT = 80;
 * Handler for the /chip/info URI
 */
 static esp_err_t chipInfoHandler(httpd_req_t* req);
+
+/*
+* Device status handler /status URI
+*/
+static esp_err_t statusHandler(httpd_req_t* req);
 
 void RESTServer::start() {
   // Start the REST server
@@ -39,6 +45,15 @@ void RESTServer::start() {
     .user_ctx = nullptr
   };
   httpd_register_uri_handler(server, &chipInfoUri);
+
+  // Get the device status
+  httpd_uri_t statusUri = {
+    .uri = "/status",
+    .method = HTTP_GET,
+    .handler = statusHandler,
+    .user_ctx = nullptr
+  };
+  httpd_register_uri_handler(server, &statusUri);
 }
 
 // Handler for the /chip/info URI
@@ -88,6 +103,30 @@ static esp_err_t chipInfoHandler(httpd_req_t* req) {
   cJSON_AddNumberToObject(root, "cores", chipInfo.cores);
   cJSON_AddNumberToObject(root, "revision", chipInfo.revision);
   cJSON_AddNumberToObject(root, "features", chipInfo.features);
+
+  char* json = cJSON_Print(root);
+  cJSON_Delete(root);
+
+  httpd_resp_set_type(req, "application/json");
+  httpd_resp_send(req, json, strlen(json));
+  free(json);
+  return ESP_OK;
+}
+
+// Device status handler /status URI
+static esp_err_t statusHandler(httpd_req_t* req) {
+  DeviceController* deviceController = DeviceController::getInstance();
+  cJSON* root = cJSON_CreateObject();
+  cJSON_AddStringToObject(root, "temp-inside", std::to_string(deviceController->getDHTSensor1().getTemperature()).c_str());
+  cJSON_AddStringToObject(root, "humidity-inside", std::to_string(deviceController->getDHTSensor1().getHumidity()).c_str());
+  cJSON_AddStringToObject(root, "temp-outside", std::to_string(deviceController->getDHTSensor2().getTemperature()).c_str());
+  cJSON_AddStringToObject(root, "humidity-outside", std::to_string(deviceController->getDHTSensor2().getHumidity()).c_str());
+  cJSON_AddStringToObject(root, "aqi", std::to_string(deviceController->getGasSensor().read()).c_str());
+  cJSON_AddStringToObject(root, "fan-state", deviceController->getCPUFan().isOn() ? "on" : "off");
+  cJSON_AddStringToObject(root, "fan-speed", std::to_string(deviceController->getCPUFan().getFanSpeed()).c_str());
+  cJSON_AddStringToObject(root, "fan-rpm", std::to_string(deviceController->getCPUFan().getFanRPM()).c_str());
+  cJSON_AddStringToObject(root, "fan-current", std::to_string(deviceController->getCurrentSensor().read()).c_str());
+  cJSON_AddStringToObject(root, "fan-voltage", std::to_string(deviceController->getVoltageSensor().read()).c_str());
 
   char* json = cJSON_Print(root);
   cJSON_Delete(root);
