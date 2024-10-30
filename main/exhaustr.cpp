@@ -10,6 +10,7 @@
 #include "CurrentSensor.hpp"
 #include "DHTSensor.hpp"
 #include "GasSensor.hpp"
+#include "RESTServer.hpp"
 #include "VoltageSensor.hpp"
 #include "WiFi.hpp"
 
@@ -79,6 +80,9 @@ void app_main() {
   if (res != 0) {
     printf("Failed to create thread: %d\n", res);
   }
+
+  RESTServer restServer;
+  restServer.start();
 
   int speed = 0;
 
