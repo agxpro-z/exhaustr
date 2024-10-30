@@ -11,6 +11,7 @@
 #include "DHTSensor.hpp"
 #include "GasSensor.hpp"
 #include "VoltageSensor.hpp"
+#include "WiFi.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,6 +56,8 @@ void app_main() {
 
   CurrentSensor currentSensor(ADC1_CHANNEL_4 /* GPIO32 */, ADC_WIDTH_BIT_12);
   VoltageSensor voltageSensor(ADC1_CHANNEL_5 /* GPIO33 */, ADC_WIDTH_BIT_12);
+
+  WiFi wifi("ESP32 WiFi", "password", WiFi::Type::AP);
 
   // Create a thread to blink the built-in LED
   esp_pthread_cfg_t cfg = esp_pthread_get_default_config();

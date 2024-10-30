@@ -7,5 +7,6 @@ idf_component_register(
         "GasSensor.cpp"
         "VoltageSensor.cpp"
         "Switch.cpp"
+        "WiFi.cpp"
     INCLUDE_DIRS "."
 )
