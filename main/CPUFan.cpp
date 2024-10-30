@@ -37,7 +37,8 @@ CPUFan::CPUFan(
     .duty_resolution = LEDC_TIMER_8_BIT,
     .timer_num = LEDC_TIMER_0,
     .freq_hz = 25000,
-    .clk_cfg = LEDC_AUTO_CLK
+    .clk_cfg = LEDC_AUTO_CLK,
+    .deconfigure = false
   };
   ledc_timer_config(&timerConfig);
 
