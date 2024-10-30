@@ -22,7 +22,7 @@ extern "C" {
 void* blink_thread(void* arg) {
   BuiltInLED& builtinLED = DeviceController::getInstance()->getBuiltInLED();
   while (true) {
-    builtinLED.blink(1000);
+    builtinLED.blink(250);
   }
   return nullptr;
 }
