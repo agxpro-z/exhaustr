@@ -8,6 +8,7 @@
 #include "BuiltinLED.hpp"
 #include "CPUFan.hpp"
 #include "CurrentSensor.hpp"
+#include "DeviceController.hpp"
 #include "DHTSensor.hpp"
 #include "GasSensor.hpp"
 #include "RESTServer.hpp"
@@ -19,44 +20,16 @@ extern "C" {
 #endif
 
 void* blink_thread(void* arg) {
-  BuiltInLED builtinLED;
+  BuiltInLED& builtinLED = DeviceController::getInstance()->getBuiltInLED();
   while (true) {
     builtinLED.blink(1000);
   }
   return nullptr;
 }
 
-void* dht_thread(void* args) {
-  DHTSensor dhtSensor1(GPIO_NUM_9, DHTSensor::SensorType::DHT_TYPE_DHT11, "DHT Sensor 1");
-  DHTSensor dhtSensor2(GPIO_NUM_10, DHTSensor::SensorType::DHT_TYPE_DHT11, "DHT Sensor 2");
-  GasSensor gasSensor(ADC1_CHANNEL_6 /* GPIO34 */, ADC_WIDTH_BIT_12);
-
-  while (true) {
-    float airQuality = gasSensor.read();
-    printf("Air Quality: %.2f\n", airQuality);
-
-    printf("DHT Sensor 1: Temperature: %.2f°C, Humidity: %.2f%%\n", dhtSensor1.getTemperature(), dhtSensor1.getHumidity());
-    printf("DHT Sensor 2: Temperature: %.2f°C, Humidity: %.2f%%\n", dhtSensor2.getTemperature(), dhtSensor2.getHumidity());
-
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-  }
-  return nullptr;
-}
-
-void* fanRPM_thread(void* arg) {
-  CPUFan* cpuFan = (CPUFan*) arg;
-  while (true) {
-    printf("Fan RPM: %d\n", cpuFan->getFanRPM());
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-  }
-  return nullptr;
-}
-
 void app_main() {
-  CPUFan cpuFan(GPIO_NUM_15, GPIO_NUM_22, GPIO_NUM_23, "CPU Fan");
-
-  CurrentSensor currentSensor(ADC1_CHANNEL_4 /* GPIO32 */, ADC_WIDTH_BIT_12);
-  VoltageSensor voltageSensor(ADC1_CHANNEL_5 /* GPIO33 */, ADC_WIDTH_BIT_12);
+  // Initialize the device controller
+  DeviceController::getInstance();
 
   WiFi wifi("ESP32 WiFi", "password", WiFi::Type::AP);
 
@@ -69,40 +42,17 @@ void app_main() {
     printf("Failed to create thread: %d\n", res);
   }
 
-  // Create a thread to read data from the DHT sensors and gas sensor
-  res = pthread_create(&thread, nullptr, dht_thread, nullptr);
-  if (res != 0) {
-    printf("Failed to create thread: %d\n", res);
-  }
-
-  // Create a thread to read the fan RPM
-  res = pthread_create(&thread, nullptr, fanRPM_thread, &cpuFan);
-  if (res != 0) {
-    printf("Failed to create thread: %d\n", res);
-  }
-
   RESTServer restServer;
   restServer.start();
 
+  CPUFan& cpuFan = DeviceController::getInstance()->getCPUFan();
   int speed = 0;
-
   while (true) {
-    printf("Fan Speed: %d%%\n", cpuFan.getFanSpeed());
-    float current = currentSensor.read();
-    printf("Current: %.2f A\n", current);
-    float voltage = voltageSensor.read();
-    printf("Voltage: %.2f V\n", voltage);
-
-    vTaskDelay(5000 / portTICK_PERIOD_MS);
+    printf("Fan speed: %d\n", speed);
     cpuFan.turnOn();
-
-    current = currentSensor.read();
-    printf("Current: %.2f A\n", current);
-    voltage = voltageSensor.read();
-    printf("Voltage: %.2f V\n", voltage);
-
     vTaskDelay(15000 / portTICK_PERIOD_MS);
     cpuFan.turnOff();
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
 
     speed = (speed + 10) % 110;
     cpuFan.setFanSpeed(speed);
