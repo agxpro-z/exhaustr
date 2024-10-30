@@ -88,7 +88,7 @@ void WiFi::setupAP(wifi_config_t& wifi_config) {
       // .password = "",
       .ssid_len = (uint8_t) this->ssid.length(),
       .channel = 1,
-      .authmode = WIFI_AUTH_WPA2_PSK,
+      .authmode = WIFI_AUTH_WPA_WPA2_PSK,
       .ssid_hidden = 0,
       .max_connection = 4,
       .beacon_interval = 100,
