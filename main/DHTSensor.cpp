@@ -36,8 +36,12 @@ void DHTSensor::read() {
 
 void DHTSensor::read(float* temperature, float* humidity) {
   this->read();
-  *temperature = this->temperature;
-  *humidity = this->humidity;
+  if (temperature != nullptr) {
+    *temperature = this->temperature;
+  }
+  if (humidity != nullptr) {
+    *humidity = this->humidity;
+  }
 }
 
 float DHTSensor::getTemperature() {
