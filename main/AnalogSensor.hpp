@@ -16,4 +16,5 @@ class AnalogSensor {
   }
 
   virtual float read() = 0;
+  virtual ~AnalogSensor() = default;
 };

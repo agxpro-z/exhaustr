@@ -3,6 +3,7 @@ idf_component_register(
         "BuiltinLED.cpp"
         "CPUFan.cpp"
         "CurrentSensor.cpp"
+        "DeviceController.cpp"
         "DHTSensor.cpp"
         "GasSensor.cpp"
         "RESTServer.cpp"
