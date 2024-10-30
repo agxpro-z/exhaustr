@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "driver/gpio.h"
 
@@ -15,4 +16,5 @@ class Switch {
   bool isOn();
   void on();
   void off();
+  void pattern(std::vector<bool> pattern, int delay);
 };
