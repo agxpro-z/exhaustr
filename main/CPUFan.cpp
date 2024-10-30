@@ -63,6 +63,9 @@ void IRAM_ATTR rpm_isr_handler(void* arg) {
 }
 
 void CPUFan::turnOn() {
+  if (this->isOn()) {
+    return;
+  }
   gpio_isr_handler_add(tachoPin, rpm_isr_handler, &this->fanRPMCounter);
   this->fanSwitch.on();
 
