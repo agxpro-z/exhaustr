@@ -1,7 +1,6 @@
 #include <iostream>
 #include <stdio.h>
 
-
 #include "driver/adc.h"
 #include "esp_pthread.h"
 #include "freertos/FreeRTOS.h"
@@ -52,7 +51,7 @@ void* fanRPM_thread(void* arg) {
 }
 
 void app_main() {
-  CPUFan cpuFan(GPIO_NUM_15, GPIO_NUM_22, "CPU Fan");
+  CPUFan cpuFan(GPIO_NUM_15, GPIO_NUM_22, GPIO_NUM_23, "CPU Fan");
 
   CurrentSensor currentSensor(ADC1_CHANNEL_4 /* GPIO32 */, ADC_WIDTH_BIT_12);
   VoltageSensor voltageSensor(ADC1_CHANNEL_5 /* GPIO33 */, ADC_WIDTH_BIT_12);
@@ -78,13 +77,16 @@ void app_main() {
     printf("Failed to create thread: %d\n", res);
   }
 
+  int speed = 0;
+
   while (true) {
+    printf("Fan Speed: %d%%\n", cpuFan.getFanSpeed());
     float current = currentSensor.read();
     printf("Current: %.2f A\n", current);
     float voltage = voltageSensor.read();
     printf("Voltage: %.2f V\n", voltage);
 
-    vTaskDelay(15000 / portTICK_PERIOD_MS);
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
     cpuFan.turnOn();
 
     current = currentSensor.read();
@@ -94,6 +96,9 @@ void app_main() {
 
     vTaskDelay(15000 / portTICK_PERIOD_MS);
     cpuFan.turnOff();
+
+    speed = (speed + 10) % 110;
+    cpuFan.setFanSpeed(speed);
   }
 }
 
