@@ -58,6 +58,11 @@ void app_main() {
       deviceController->getDHTSensor2().read(&temperature2, &humidity2);
       float aqi = deviceController->getGasSensor().read();
 
+      if (temperature1 < 0 or temperature2 < 0) {
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        continue;
+      }
+
       float tempDiff = temperature1 - temperature2;
       if (tempDiff >= 2) {
         if (tempDiff >= 10) {
