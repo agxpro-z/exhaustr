@@ -29,7 +29,7 @@ void* blink_thread(void* arg) {
 
 void app_main() {
   // Initialize the device controller
-  DeviceController::getInstance();
+  DeviceController* deviceController =  DeviceController::getInstance();
 
   WiFi wifi("ESP32 WiFi", "password", WiFi::Type::AP);
 
@@ -46,16 +46,30 @@ void app_main() {
   restServer.start();
 
   CPUFan& cpuFan = DeviceController::getInstance()->getCPUFan();
-  int speed = 0;
   while (true) {
-    printf("Fan speed: %d\n", speed);
-    cpuFan.turnOn();
-    vTaskDelay(15000 / portTICK_PERIOD_MS);
-    cpuFan.turnOff();
-    vTaskDelay(5000 / portTICK_PERIOD_MS);
+    if (deviceController->getMode() == DeviceController::Mode::AUTO) {
+      float temperature1, humidity1;
+      deviceController->getDHTSensor1().read(&temperature1, &humidity1);
+      float temperature2, humidity2;
+      deviceController->getDHTSensor2().read(&temperature2, &humidity2);
+      float aqi = deviceController->getGasSensor().read();
 
-    speed = (speed + 10) % 110;
-    cpuFan.setFanSpeed(speed);
+      float tempDiff = temperature1 - temperature2;
+      if (tempDiff >= 2) {
+        if (tempDiff >= 10) {
+          cpuFan.setFanSpeed(100);
+        } else {
+          cpuFan.setFanSpeed(10 * tempDiff);
+        }
+        cpuFan.turnOn();
+      } else if (aqi > 200) {
+        cpuFan.setFanSpeed(100);
+        cpuFan.turnOn();
+      } else {
+        cpuFan.turnOff();
+      }
+    }
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
 
