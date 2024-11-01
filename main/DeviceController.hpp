@@ -22,59 +22,27 @@ class DeviceController {
   Mode mode = Mode::AUTO;
 
   // Device components
-  BuiltInLED* mBuiltinLED;
-  CPUFan* mCPUFan;
-  CurrentSensor* mCurrentSensor;
-  DHTSensor* mDHTSensor1;
-  DHTSensor* mDHTSensor2;
-  GasSensor* mGasSensor;
-  VoltageSensor* mVoltageSensor;
+  BuiltInLED* builtinLED;
+  CPUFan* cpuFan;
+  CurrentSensor* currentSensor;
+  DHTSensor* dhtSensor1;
+  DHTSensor* dhtSensor2;
+  GasSensor* gasSensor;
+  VoltageSensor* voltageSensor;
 
   DeviceController();
 
  public:
-  static DeviceController* getInstance() {
-    if (deviceController == nullptr) {
-      deviceController = new DeviceController();
-    }
-    return deviceController;
-  }
-
+  static DeviceController* getInstance();
   ~DeviceController();
 
-  Mode getMode() {
-    return this->mode;
-  }
-
-  void setMode(Mode mode) {
-    this->mode = mode;
-  }
-
-  BuiltInLED& getBuiltInLED() {
-    return *this->mBuiltinLED;
-  }
-
-  CPUFan& getCPUFan() {
-    return *this->mCPUFan;
-  }
-
-  CurrentSensor& getCurrentSensor() {
-    return *this->mCurrentSensor;
-  }
-
-  DHTSensor& getDHTSensor1() {
-    return *this->mDHTSensor1;
-  }
-
-  DHTSensor& getDHTSensor2() {
-    return *this->mDHTSensor2;
-  }
-
-  GasSensor& getGasSensor() {
-    return *this->mGasSensor;
-  }
-
-  VoltageSensor& getVoltageSensor() {
-    return *this->mVoltageSensor;
-  }
+  Mode getMode();
+  void setMode(Mode mode);
+  BuiltInLED& getBuiltInLED();
+  CPUFan& getCPUFan();
+  CurrentSensor& getCurrentSensor();
+  DHTSensor& getDHTSensor1();
+  DHTSensor& getDHTSensor2();
+  GasSensor& getGasSensor();
+  VoltageSensor& getVoltageSensor();
 };
