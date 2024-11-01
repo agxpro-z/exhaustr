@@ -42,6 +42,10 @@ void app_main() {
     printf("Failed to create thread: %d\n", res);
   }
 
+  // Generally the first read fails, so we pre-read the sensor
+  deviceController->getDHTSensor1().read(nullptr, nullptr);
+  deviceController->getDHTSensor2().read(nullptr, nullptr);
+
   RESTServer restServer;
   restServer.start();
 
