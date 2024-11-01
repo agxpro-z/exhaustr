@@ -8,9 +8,18 @@
 #include "VoltageSensor.hpp"
 
 class DeviceController {
+ public:
+  enum Mode {
+    AUTO,
+    MANUAL
+  };
+
  private:
   // Singleton instance
   static DeviceController* deviceController;
+
+  // Device mode
+  Mode mode = Mode::AUTO;
 
   // Device components
   BuiltInLED* mBuiltinLED;
@@ -32,6 +41,14 @@ class DeviceController {
   }
 
   ~DeviceController();
+
+  Mode getMode() {
+    return this->mode;
+  }
+
+  void setMode(Mode mode) {
+    this->mode = mode;
+  }
 
   BuiltInLED& getBuiltInLED() {
     return *this->mBuiltinLED;
