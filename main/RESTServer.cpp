@@ -23,6 +23,16 @@ static esp_err_t chipInfoHandler(httpd_req_t* req);
 static esp_err_t statusHandler(httpd_req_t* req);
 
 /*
+ * Device operation mode GET handler /mode URI
+ */
+static esp_err_t modeGetHandler(httpd_req_t* req);
+
+/*
+ * Device operation mode POST handler /mode URI
+ */
+static esp_err_t modePostHandler(httpd_req_t* req);
+
+/*
  * Fan state GET handler /fan/state URI
  */
 static esp_err_t fanStateGetHandler(httpd_req_t* req);
@@ -74,6 +84,24 @@ void RESTServer::start() {
     .user_ctx = nullptr
   };
   httpd_register_uri_handler(server, &statusUri);
+
+  // Get the device operation mode
+  httpd_uri_t modeGetUri = {
+    .uri = "/mode",
+    .method = HTTP_GET,
+    .handler = modeGetHandler,
+    .user_ctx = nullptr
+  };
+  httpd_register_uri_handler(server, &modeGetUri);
+
+  // Set the device operation mode
+  httpd_uri_t modePostUri = {
+    .uri = "/mode",
+    .method = HTTP_POST,
+    .handler = modePostHandler,
+    .user_ctx = nullptr
+  };
+  httpd_register_uri_handler(server, &modePostUri);
 
   // Get the fan state
   httpd_uri_t fanStateUri = {
@@ -190,6 +218,63 @@ static esp_err_t statusHandler(httpd_req_t* req) {
   httpd_resp_set_type(req, "application/json");
   httpd_resp_send(req, json, strlen(json));
   free(json);
+  return ESP_OK;
+}
+
+// Device operation mode GET handler /mode URI
+static esp_err_t modeGetHandler(httpd_req_t* req) {
+  DeviceController* deviceController = DeviceController::getInstance();
+  cJSON* root = cJSON_CreateObject();
+  cJSON_AddStringToObject(root, "mode", deviceController->getMode() == DeviceController::Mode::AUTO ? "auto" : "manual");
+
+  char* json = cJSON_Print(root);
+  cJSON_Delete(root);
+
+  httpd_resp_set_type(req, "application/json");
+  httpd_resp_send(req, json, strlen(json));
+  free(json);
+  return ESP_OK;
+}
+
+// Device operation mode POST handler /mode URI
+static esp_err_t modePostHandler(httpd_req_t* req) {
+  DeviceController* deviceController = DeviceController::getInstance();
+  char buf[1024];
+  int ret = httpd_req_recv(req, buf, sizeof(buf));
+  if (ret <= 0) {
+    if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
+      httpd_resp_send_408(req);
+    }
+    return ESP_FAIL;
+  }
+  buf[ret] = '\0';
+
+  cJSON* root = cJSON_Parse(buf);
+  if (root == nullptr) {
+    httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid JSON");
+    return ESP_FAIL;
+  }
+
+  cJSON* mode = cJSON_GetObjectItem(root, "mode");
+  if (mode == nullptr or !cJSON_IsString(mode)) {
+    httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid mode! Must be a string");
+    cJSON_Delete(root);
+    return ESP_FAIL;
+  }
+
+  if (strcmp(mode->valuestring, "auto") == 0) {
+    deviceController->setMode(DeviceController::Mode::AUTO);
+  } else if (strcmp(mode->valuestring, "manual") == 0) {
+    deviceController->setMode(DeviceController::Mode::MANUAL);
+  } else {
+    httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid mode! Must be 'auto' or 'manual'");
+    cJSON_Delete(root);
+    return ESP_FAIL;
+  }
+
+  cJSON_Delete(root);
+  httpd_resp_send(req, nullptr, 0);
+
   return ESP_OK;
 }
 
