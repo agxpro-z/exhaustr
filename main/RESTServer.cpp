@@ -201,6 +201,7 @@ static esp_err_t chipInfoHandler(httpd_req_t* req) {
 static esp_err_t statusHandler(httpd_req_t* req) {
   DeviceController* deviceController = DeviceController::getInstance();
   cJSON* root = cJSON_CreateObject();
+  cJSON_AddStringToObject(root, "mode", deviceController->getMode() == DeviceController::Mode::AUTO ? "auto" : "manual");
   cJSON_AddStringToObject(root, "temp-inside", std::to_string(deviceController->getDHTSensor1().getTemperature()).c_str());
   cJSON_AddStringToObject(root, "humidity-inside", std::to_string(deviceController->getDHTSensor1().getHumidity()).c_str());
   cJSON_AddStringToObject(root, "temp-outside", std::to_string(deviceController->getDHTSensor2().getTemperature()).c_str());
